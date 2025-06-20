@@ -1,0 +1,26 @@
+services:
+  hotel-api:
+    container_name: hotel-api
+    build: ./
+    ports:
+      - '8080:8080'
+    env_file:
+      - .env
+    stdin_open: true
+    tty: true
+    restart: always
+    depends_on:
+      - hotel-postgres
+
+  hotel-postgres:
+    image: postgres:16.8-alpine3.20
+    container_name: hotel-postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./db_data:/var/lib/postgresql/data
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}

@@ -1,3 +1,6 @@
+import fs from 'fs';
+import path from 'path';
+
 import { Express, Request, Response } from 'express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
@@ -16,17 +19,23 @@ const options: swaggerJsdoc.Options = {
   apis: ['./src/routes/*.ts', './src/schema/*.ts', './src/models/*.ts'],
 };
 
-const swaggerSpec = swaggerJsdoc(options);
+export function loadSwaggerSpec(): object {
+  if (process.env.NODE_ENV === 'production') {
+    const swaggerPath = path.resolve(__dirname, '../../../swagger.json');
+    if (fs.existsSync(swaggerPath)) {
+      return JSON.parse(fs.readFileSync(swaggerPath, 'utf-8'));
+    }
+    console.warn('⚠️ swagger.json не найден в production!');
+    return {};
+  }
+
+  return swaggerJsdoc(options);
+}
+
+const swaggerSpec = loadSwaggerSpec();
 
 function swaggerDocs(app: Express, port: number) {
-  app.use(
-    '/docs',
-    swaggerUi.serve,
-    swaggerUi.setup(swaggerSpec, {
-      customCss:
-        '.swagger-ui .topbar { display: none } .opblock-description-wrapper { display: none }',
-    }),
-  );
+  app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
   app.get('/docs.json', (_req: Request, res: Response) => {
     res.setHeader('Content-Type', 'application/json');

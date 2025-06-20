@@ -1,13 +1,12 @@
 import 'express';
-// import { UserInfo } from '#types/oidcType';
-// XXX: Тут нужны какие-то фиксы
+import { JWTPayload } from '#types/jwtType';
 
-interface Locals {
-  // user?: UserInfo;
+interface MyLocals {
+  user?: JWTPayload;
 }
 
 declare module 'express' {
   export interface Response {
-    locals: Locals;
+    locals: MyLocals;
   }
 }
